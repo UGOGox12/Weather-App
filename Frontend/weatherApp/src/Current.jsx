@@ -4,7 +4,7 @@ function Current(props) {
   return (
     <div className="current-weather flex flex-col items-center justify-center bg-white/10 backdrop-blur-lg rounded-xl p-6 shadow-lg">
       <p>
-        {props.country} / {props.state}
+        {props.countryTitle} / {props.state}
       </p>
       <img src={props.icon || sunny} alt="Weather Icon" className="w-24 h-24" />
       <h1 className="temperature text-5xl font-bold text-center">

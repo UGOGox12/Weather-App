@@ -1,25 +1,19 @@
 import "./App.css";
-import { useState } from "react";
-import hero from "./assets/hero.png";
+import { useState, useEffect } from "react"; // <-- added useEffect
 import sunny from "./assets/sunny.webp";
 import HourlyForcast from "./HourlyForcast.jsx";
 import Current from "./current.jsx";
 import Search from "./Search.jsx";
-
-
+import defaultBg from "./assets/background.jpg";
 
 function App() {
-  const myStyle = {
-
-  };
-
-const key = import.meta.env.VITE_WEATHER_API_KEY;
+  const key = import.meta.env.VITE_WEATHER_API_KEY;
 
   let time = new Date().getHours();
 
-
   const [city, setCity] = useState("");
-  const [country, setCountry] = useState("Country");
+  const [countryTitle, setCountryTitle] = useState("Country");
+  const [country, setCountry] = useState("");
   const [description, setDescription] = useState("");
   const [state, setState] = useState("State");
   const [temperature, setTemperature] = useState("0");
@@ -27,25 +21,26 @@ const key = import.meta.env.VITE_WEATHER_API_KEY;
   const [maxTemp, setMaxTemp] = useState("0");
   const [weatherData, setWeatherData] = useState(null);
   const [myURL, setMyURL] = useState("");
+  const [backgroundUrl, setBackgroundUrl] = useState(defaultBg);
 
   const URL = `https://api.weatherapi.com/v1/forecast.json?key=${key}&q=${city}`;
 
-
-const getLocation = () => {
-  navigator.geolocation.getCurrentPosition(
-    (position) => {
-      const { latitude, longitude } = position.coords;
-      const url = `https://api.weatherapi.com/v1/forecast.json?key=${key}&q=${latitude},${longitude}`;
-      setMyURL(url); // save to state
-
-    },
-    (error) => {
-      console.error("Error getting location:", error);
-    }
-  );
-};
-
-getLocation();
+  // ✅ useEffect for geolocation (runs once after mount)
+  useEffect(() => {
+    const getLocation = () => {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          const url = `https://api.weatherapi.com/v1/forecast.json?key=${key}&q=${latitude},${longitude}`;
+          setMyURL(url);
+        },
+        (error) => {
+          console.error("Error getting location:", error);
+        }
+      );
+    };
+    getLocation();
+  }, [key]);
 
   let handleChange = (event) => {
     setCity(event.target.value);
@@ -58,16 +53,15 @@ getLocation();
     }
 
     try {
-      const response = await fetch(URL); // <-- await here always with fetch
+      const response = await fetch(URL);
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
-      const data = await response.json(); // now works
+      const data = await response.json();
       setWeatherData(data);
       setCountry(data.location.country);
-
+      setCountryTitle(data.location.country);
       setState(data.location.name);
-
       setDescription(data.current.condition.text);
       setTemperature(Math.floor(data.current.temp_c));
       setMinTemp(data.forecast.forecastday[0].day.mintemp_c);
@@ -77,22 +71,48 @@ getLocation();
     }
     setCity("");
   };
+
+  // ✅ useEffect for background (runs whenever country/description changes)
+  useEffect(() => {
+    const getBackground = async () => {
+      if (!country && !description) return;
+      try {
+        const query = `${description} ${country}`;
+        const response = await fetch(
+          `https://api.pexels.com/v1/search?query=${query}`,
+          {
+            headers: {
+              Authorization: import.meta.env.VITE_BACKGROUND_API_KEY,
+            },
+          }
+        );
+        const data = await response.json();
+        if (data.photos && data.photos.length > 0) {
+          setBackgroundUrl(data.photos[0].src.landscape);
+
+        } else {
+          setBackgroundUrl(defaultBg); // fallback
+        }
+      } catch (error) {
+        console.error("Error fetching background image:", error);
+        setBackgroundUrl(defaultBg); // fallback on error
+      }
+    };
+    getBackground();
+  }, [country, description]);
 
   
-
   const locate = async () => {
-
     try {
-      const response = await fetch(myURL); // <-- await here always with fetch
+      const response = await fetch(myURL);
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
-      const data = await response.json(); // now works
+      const data = await response.json();
       setWeatherData(data);
       setCountry(data.location.country);
-
+      setCountryTitle(data.location.country);
       setState(data.location.name);
-
       setDescription(data.current.condition.text);
       setTemperature(Math.floor(data.current.temp_c));
       setMinTemp(data.forecast.forecastday[0].day.mintemp_c);
@@ -102,26 +122,26 @@ getLocation();
     }
     setCity("");
   };
-
 
   return (
     <>
-      <div className=" myBackground relative ">
-        {/* Dark overlay for readability */}
+      <div
+        className="myBackground relative"
+        style={{ backgroundImage: `url(${backgroundUrl})` }}
+      >
         <div className="absolute inset-0 bg-black/30"></div>
 
-        {/* Main container */}
         <div className="container relative z-10 text-white flex flex-col items-center min-h-screen min-w-screen p-6">
-          {/* Search section */}
-          <Search city={city} addC={addC} 
-          handleChange={handleChange} 
-          locate={locate} 
+          <Search
+            city={city}
+            addC={addC}
+            handleChange={handleChange}
+            locate={locate}
           />
 
-          {/* Weather section */}
           <div className="Weather-section mt-10">
             <Current
-              country={country}
+              countryTitle={countryTitle}
               state={state}
               description={description}
               temperature={temperature}
@@ -130,20 +150,19 @@ getLocation();
               icon={weatherData?.current?.condition?.icon}
             />
 
-            {/* hourly forecast section */}
-<div className="hourly-forecast flex flex-row gap-4 ">
-  {weatherData &&
-    weatherData.forecast.forecastday[0].hour.slice(time+1, time+5).map((h, index) => (
-      <HourlyForcast
-        key={index}
-        hour={h.time}
-        temperature={h.temp_c}
-        icon={h.condition.icon}
-
-      />
-    ))}
-</div>
-            
+            <div className="hourly-forecast flex flex-row gap-4 ">
+              {weatherData &&
+                weatherData.forecast.forecastday[0].hour
+                  .slice(time + 1, time + 5)
+                  .map((h, index) => (
+                    <HourlyForcast
+                      key={index}
+                      hour={h.time}
+                      temperature={h.temp_c}
+                      icon={h.condition.icon}
+                    />
+                  ))}
+            </div>
           </div>
         </div>
       </div>

@@ -10,6 +10,7 @@ function Search(props) {
             <form className="search-form flex items-center bg-white/20 backdrop-blur-md rounded-lg px-4 py-2 w-full"
               onSubmit={(e) => {
                 props.addC();
+                // props.backGround();
                 e.preventDefault();
               }}
             >
@@ -23,8 +24,11 @@ function Search(props) {
               />
             </form>
 
-            <button className="location-button ml-4 p-2 rounded-md bg-blue-500 hover:bg-blue-600 hover:animate-pulse"
-             onClick={props.locate}
+            <button title="My location" className="location-button ml-4 p-2 rounded-md bg-blue-500 hover:bg-blue-600 hover:animate-pulse"
+             onClick={() => {
+               props.locate();
+              //  props.backGround();
+             }}
               >
               <img
                 className="w-8 h-8"
