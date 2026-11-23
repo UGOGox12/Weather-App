@@ -1,5 +1,5 @@
 import "./App.css";
-import { useState, useEffect } from "react"; // <-- added useEffect
+import { useState, useEffect } from "react";
 import pic from "./assets/picture.webp";
 import HourlyForcast from "./HourlyForcast.jsx";
 import Current from "./current.jsx";
@@ -11,15 +11,16 @@ function App() {
 
   let time = new Date().getHours();
 
-  const [city, setCity] = useState("");
-  const [countryTitle, setCountryTitle] = useState("Country");
-  const [country, setCountry] = useState("");
+  const [city, setCity] = useState(""); // checking
+  const [countryTitle, setCountryTitle] = useState("Country"); // checking
+  const [country, setCountry] = useState(""); // checking
+
   const [description, setDescription] = useState("");
   const [state, setState] = useState("State");
   const [temperature, setTemperature] = useState("0");
   const [minTemp, setMinTemp] = useState("0");
   const [maxTemp, setMaxTemp] = useState("0");
-  const [weatherData, setWeatherData] = useState(null);
+  const [weatherData, setWeatherData] = useState(null); // checking
   const [myURL, setMyURL] = useState("");
   const [backgroundUrl, setBackgroundUrl] = useState(defaultBg);
   const [oldBackgroundUrl, setOldBackgroundUrl] = useState(defaultBg); // for background transitions
@@ -28,7 +29,7 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
-  const URL = `https://api.weatherapi.com/v1/forecast.json?key=${key}&q=${city}`;
+  const URL = `http://api.weatherapi.com/v1/forecast.json?key=${key}&q=${city}`; // checking
 
   // useEffect for geolocation (runs once after mount)
   useEffect(() => {
@@ -36,7 +37,7 @@ function App() {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
-          const url = `https://api.weatherapi.com/v1/forecast.json?key=${key}&q=${latitude},${longitude}`;
+          const url = `https://api.weatherapi.com/v1/forecast.json?key=${key}&q=${latitude},${longitude}`; // checking
           setMyURL(url);
         },
         (error) => {
@@ -101,7 +102,7 @@ function App() {
       try {
         const query = `${description}`;
         const response = await fetch(
-          `https://api.pexels.com/v1/search?query=${query},${"weather"}`,
+          `https://api.pexels.com/v1/search?query=${query},${"weather"}`, // checking
           {
             headers: {
               Authorization: import.meta.env.VITE_BACKGROUND_API_KEY,
@@ -153,7 +154,7 @@ function App() {
 
   return (
     <>
-      <div className="myBackground relative">
+      <div className="myBackground relative ">
         {/* Old background */}
         <div
           className="absolute inset-0 bg-cover bg-center transition-opacity duration-1000"
@@ -172,8 +173,6 @@ function App() {
             opacity: showNew ? 1 : 0,
           }}
         />
-
-        {/* Overlay and content */}
 
         {errorMessage && (
           <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-4 py-2 rounded z-20 mb-4">

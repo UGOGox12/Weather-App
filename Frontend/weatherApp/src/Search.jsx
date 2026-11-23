@@ -1,5 +1,4 @@
 import location from "./assets/location1.svg";
-import { useState, useEffect } from "react";
 
 function Search(props) {
   return (
@@ -11,7 +10,7 @@ function Search(props) {
           // props.backGround();
           e.preventDefault();
         }}
-      >
+      > 
         <span className="material-symbols-rounded text-gray-200 mr-2">
           search
         </span>
