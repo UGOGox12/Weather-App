@@ -9,7 +9,7 @@ import defaultBg from "./assets/background.jpg";
 function App() {
   const key = import.meta.env.VITE_WEATHER_API_KEY;
 
-  let time = new Date().getHours();
+  // let time = new Date().getHours();
 
   const [city, setCity] = useState(""); // checking
   const [countryTitle, setCountryTitle] = useState("Country"); // checking
@@ -29,7 +29,7 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
-  const URL = `http://api.weatherapi.com/v1/forecast.json?key=${key}&q=${city}`; // checking
+  const URL = `https://api.weatherapi.com/v1/forecast.json?key=${key}&q=${city}&days=2`; // checking
 
   // useEffect for geolocation (runs once after mount)
   useEffect(() => {
@@ -37,7 +37,7 @@ function App() {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
-          const url = `https://api.weatherapi.com/v1/forecast.json?key=${key}&q=${latitude},${longitude}`; // checking
+          const url = `https://api.weatherapi.com/v1/forecast.json?key=${key}&q=${latitude},${longitude}&days=2`; // checking
           setMyURL(url);
         },
         (error) => {
@@ -208,11 +208,18 @@ function App() {
 
               <div className="hourly-forecast flex flex-row gap-4 ">
                 {weatherData &&
-                  weatherData.forecast.forecastday[0].hour
-                    .slice(time + 1, time + 5)
-                    .map((h, index) => (
+                  [
+                    ...weatherData.forecast.forecastday[0].hour,
+                    ...(weatherData.forecast.forecastday[1]?.hour || []),
+                  ]
+                    .filter(
+                      (h) =>
+                        h.time_epoch > weatherData.location.localtime_epoch,
+                    )
+                    .slice(0, 4)
+                    .map((h) => (
                       <HourlyForcast
-                        key={index}
+                        key={h.time_epoch}
                         hour={h.time}
                         temperature={h.temp_c}
                         icon={h.condition.icon}
